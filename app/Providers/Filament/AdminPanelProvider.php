@@ -33,6 +33,7 @@ class AdminPanelProvider extends PanelProvider
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->login(Login::class)
             ->authGuard('web')
+            ->favicon(asset('favicon.ico'))
             ->colors([
                 'primary' => '#74B1FF',
             ])
