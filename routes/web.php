@@ -8,4 +8,6 @@ Route::redirect('/', '/admin');
 
 Route::get('/r/{code}', EventRegistration::class)->name('register');
 
-Route::get('/r/{code}/success/{registrationGroupId}', RegistrationSuccess::class)->name('registration.success');
+Route::get('/r/{code}/success/{registrationGroupId}', RegistrationSuccess::class)
+    ->whereUuid('registrationGroupId')
+    ->name('registration.success');
