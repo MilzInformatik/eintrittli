@@ -23,7 +23,6 @@ use Filament\Schemas\Schema;
 use Filament\Support\Colors\Color;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
@@ -41,13 +40,6 @@ class EventRegistration extends SimplePage
 
     public function mount(string $code): void
     {
-        $key = 'register-page:'.request()->ip();
-
-        if (RateLimiter::tooManyAttempts($key, 30)) {
-            abort(429, __('Too many requests. Please try again later.'));
-        }
-        RateLimiter::hit($key, 60);
-
         $this->event = Event::where('code', $code)->firstOrFail();
         $this->event->load('form.fields');
         $this->addEntry();
@@ -323,24 +315,10 @@ class EventRegistration extends SimplePage
 
         $this->validateEntries();
 
-        $key = 'registration:'.request()->ip();
-        $allowedAttempts = max(10, count($this->entries));
-        if (RateLimiter::tooManyAttempts($key, $allowedAttempts)) {
-            Notification::make()
-                ->title(__('Too many attempts'))
-                ->body(__('Please try again in an hour.'))
-                ->danger()
-                ->send();
-
-            return;
-        }
-
         $registrationGroupId = Str::uuid()->toString();
         $createdRegistrations = collect();
 
         foreach ($this->entries as $entryData) {
-            RateLimiter::hit($key, 3600);
-
             $registration = Registration::create([
                 'event_id' => $this->event->id,
                 'data' => $entryData,
